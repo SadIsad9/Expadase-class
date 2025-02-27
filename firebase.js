@@ -50,3 +50,7 @@ async function loadComments() {
 
 // Load komentar saat halaman dibuka
 document.addEventListener("DOMContentLoaded", loadComments);
+alert("Script dimulai!");  
+firebase.database().ref("/").once("value")
+  .then(snapshot => alert("Data: " + JSON.stringify(snapshot.val())))
+  .catch(error => alert("Error: " + error.message));
