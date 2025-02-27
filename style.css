@@ -1,0 +1,130 @@
+/* Video Container agar responsive */
+.video-container {
+    width: 100%;
+    max-width: 700px; /* Maksimal lebar video */
+    margin: auto;
+    position: relative;
+}
+
+/* Video agar fleksibel */
+.video-container video {
+    width: 100%;
+    height: auto; /* Menyesuaikan tinggi agar tidak melebar aneh */
+    border-radius: 10px; /* Efek lengkung */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Animasi masuk untuk seluruh halaman */
+body {
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Animasi teks di Home */
+h1 {
+    animation: fadeInDown 1s ease-in-out;
+}
+
+p.lead {
+    animation: fadeInUp 1.5s ease-in-out;
+}
+
+/* Animasi logo */
+#mainlogo {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
+    animation: bounceIn 1.5s ease-in-out;
+    margin-left: 40px;
+}
+
+/* Efek hover pada logo */
+#mainlogo:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Animasi teks alasan pembuatan web */
+.col-md-6 p {
+    animation: fadeInLeft 2s ease-in-out;
+}
+
+/* Animasi tombol navbar */
+.navbar-nav .nav-link {
+    position: relative;
+    animation: fadeIn 2s ease-in-out;
+}
+
+/* Animasi hover tombol navbar */
+.navbar-nav .nav-link::after {
+    content: '';
+    display: block;
+    height: 3px;
+    width: 0;
+    background: #ffc107;
+    transition: width 0.3s;
+}
+
+.navbar-nav .nav-link:hover::after {
+    width: 100%;
+}
+
+/* Animasi Footer */
+footer {
+    animation: fadeInUp 2s ease-in-out;
+}
+
+/* Keyframes untuk animasi */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes bounceIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
