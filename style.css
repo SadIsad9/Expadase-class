@@ -73,6 +73,9 @@ p.lead {
 /* Animasi Footer */
 footer {
     animation: fadeInUp 2s ease-in-out;
+    font-size: 14px;
+    letter-spacing: 1px;
+    font-weight: bold;
 }
 
 /* Keyframes untuk animasi */
