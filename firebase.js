@@ -62,7 +62,7 @@ window.logout = function () {
     localStorage.removeItem("username");
     localStorage.removeItem("profilePic");
     localStorage.removeItem("avatar");
-    window.location.href = "login.html";
+    window.location.href = "index.html";
 };
 
 // 📌 Fungsi Kirim Komentar
