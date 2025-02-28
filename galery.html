@@ -5,6 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expadase Class - Gallery</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Efek hover pada gambar */
+        .card-img-top {
+            transition: transform 0.3s ease;
+        }
+        .card-img-top:hover {
+            transform: scale(1.05);
+        }
+
+        /* Button hover */
+        .btn:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+
+        /* Styling untuk daftar komentar */
+        .comment-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .comment-list p {
+            margin: 0;
+            padding: 5px 0;
+        }
+
+        /* Styling untuk tombol like yang sudah diklik */
+        .btn-like:disabled {
+            background-color: #6c757d;
+        }
+    </style>
 </head>
 <body class="bg-light text-dark">
 
@@ -69,11 +100,11 @@
         images.forEach((img, index) => {
             const photoId = `photo${index + 1}`;
             gallery.innerHTML += `
-                <div class="col-md-4">
+                <div class="col-md-4 mb-4">
                     <div class="card shadow-lg">
                         <img src="Asset/${img}" class="card-img-top" alt="Kenangan ${index + 1}">
                         <div class="card-body">
-                            <button class="btn btn-outline-primary btn-sm" id="btn-like-${photoId}" onclick="likePhoto('${photoId}')">
+                            <button class="btn btn-outline-primary btn-sm btn-like" id="btn-like-${photoId}" onclick="likePhoto('${photoId}')">
                                 ❤️ <span id="like-${photoId}">0</span>
                             </button>
                             <button class="btn btn-outline-secondary btn-sm" onclick="toggleComments('${photoId}')">
@@ -82,15 +113,15 @@
                             <div id="comments-${photoId}" class="mt-2 d-none">
                                 <input type="text" id="comment-input-${photoId}" class="form-control form-control-sm mb-2" placeholder="Tulis komentar...">
                                 <button class="btn btn-sm btn-success" onclick="addComment('${photoId}')">Kirim</button>
-                                <div id="comment-list-${photoId}" class="mt-2"></div>
+                                <div id="comment-list-${photoId}" class="comment-list"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
 
-            updateLikes(photoId);
-            loadComments(photoId);
+            updateLikes(photoId); // Update like untuk setiap foto
+            loadComments(photoId); // Memuat komentar untuk setiap foto
         });
 
         // Fungsi Like (hanya bisa sekali per user)
@@ -160,7 +191,7 @@
             const commentRef = ref(db, `gallery/${photoId}/comments`);
 
             onValue(commentRef, (snapshot) => {
-                commentList.innerHTML = "";
+                commentList.innerHTML = ""; // Kosongkan komentar yang lama sebelum memuat yang baru
                 snapshot.forEach((childSnapshot) => {
                     const comment = childSnapshot.val();
                     const commentElement = document.createElement("p");
@@ -169,6 +200,14 @@
                 });
             });
         }
+
+        // Memanggil fungsi loadComments setiap kali halaman dimuat ulang
+        window.onload = () => {
+            images.forEach((img, index) => {
+                const photoId = `photo${index + 1}`;
+                loadComments(photoId); // Memuat komentar untuk setiap foto
+            });
+        };
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
