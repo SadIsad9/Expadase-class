@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
 // 📌 Konfigurasi Firebase
 const firebaseConfig = {
@@ -13,30 +13,48 @@ const firebaseConfig = {
     measurementId: "G-WTH3K9LPDS"
 };
 
-// Inisialisasi Firebase
+// 🔥 Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-console.log("firebase");
+console.log("Firebase Connected");
+
+// 📌 Generate Device ID (Sederhana, bisa diganti dengan UUID)
+const deviceID = localStorage.getItem("deviceID") || `device-${Math.random().toString(36).substr(2, 9)}`;
+localStorage.setItem("deviceID", deviceID);
+console.log("Device ID:", deviceID);
 
 // 📌 Fungsi Login
 window.loginUser = function () {
     const username = document.getElementById("username").value.trim();
-    const avatar = localStorage.getItem("avatar") || "Avatar/default.jpg";
+    const avatar = document.getElementById("selectedAvatar").value || "Avatar/default.jpg";
 
-    if (username === "") {
+    if (!username) {
         alert("Nama tidak boleh kosong!");
         return;
     }
 
-    set(ref(database, "users/" + username), {
-        name: username,
-        profilePic: avatar
-    }).then(() => {
-        localStorage.setItem("username", username);
-        localStorage.setItem("profilePic", avatar);
-        window.location.href = "home.html";
-    }).catch((error) => {
-        console.error("Gagal menyimpan user:", error);
+    // Cek apakah username sudah dipakai oleh perangkat lain
+    get(ref(database, "users/" + username)).then((snapshot) => {
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            if (userData.deviceID !== deviceID) {
+                alert("Username ini sudah digunakan di perangkat lain!");
+                return;
+            }
+        }
+
+        // Simpan data user dengan Device ID
+        set(ref(database, "users/" + username), {
+            name: username,
+            profilePic: avatar,
+            deviceID: deviceID // 🔥 Menyimpan ID perangkat
+        }).then(() => {
+            localStorage.setItem("username", username);
+            localStorage.setItem("profilePic", avatar);
+            window.location.href = "home.html";
+        }).catch((error) => {
+            console.error("Gagal menyimpan user:", error);
+        });
     });
 };
 
@@ -62,7 +80,7 @@ window.logout = function () {
     localStorage.removeItem("username");
     localStorage.removeItem("profilePic");
     localStorage.removeItem("avatar");
-    window.location.href = "index.html";
+    window.location.href = "login.html";
 };
 
 // 📌 Fungsi Kirim Komentar
