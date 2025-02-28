@@ -1,5 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } 
+from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
 
 // 🔥 Konfigurasi Firebase
 const firebaseConfig = {
@@ -22,31 +24,53 @@ window.loginUser = function () {
     const username = document.getElementById("username").value.trim();
     const age = document.getElementById("age").value.trim();
     const profilePicInput = document.getElementById("profilePic");
-    
+
     if (username === "" || age === "") {
         alert("Nama dan umur harus diisi!");
         return;
     }
 
-    let profilePicURL = "default.jpg"; // 👉 PP default
+    const storage = getStorage();
+    let profilePicURL = "default.jpg"; // Default PP
 
     if (profilePicInput.files.length > 0) {
         const file = profilePicInput.files[0];
-        profilePicURL = URL.createObjectURL(file); 
-    }
+        const storagePath = `profile_pictures/${username}_${Date.now()}`;
+        const fileRef = storageRef(storage, storagePath);
 
-    // 📌 Simpan user ke database
-    set(ref(database, "users/" + username), {
-        name: username,
-        age: age,
-        profilePic: profilePicURL
-    }).then(() => {
-        localStorage.setItem("username", username); 
-        localStorage.setItem("profilePic", profilePicURL);
-        window.location.href = "home.html"; // Redirect ke home
-    }).catch((error) => {
-        console.error("Gagal menyimpan user:", error);
-    });
+        // Upload file ke Firebase Storage
+        uploadBytes(fileRef, file).then(() => {
+            return getDownloadURL(fileRef);
+        }).then((downloadURL) => {
+            profilePicURL = downloadURL;
+
+            // Simpan user ke database setelah upload selesai
+            return set(ref(database, "users/" + username), {
+                name: username,
+                age: age,
+                profilePic: profilePicURL
+            });
+        }).then(() => {
+            localStorage.setItem("username", username);
+            localStorage.setItem("profilePic", profilePicURL);
+            window.location.href = "home.html"; // Redirect ke home
+        }).catch((error) => {
+            console.error("Gagal menyimpan user:", error);
+        });
+    } else {
+        // Jika tidak upload foto, langsung simpan data tanpa gambar
+        set(ref(database, "users/" + username), {
+            name: username,
+            age: age,
+            profilePic: profilePicURL
+        }).then(() => {
+            localStorage.setItem("username", username);
+            localStorage.setItem("profilePic", profilePicURL);
+            window.location.href = "home.html";
+        }).catch((error) => {
+            console.error("Gagal menyimpan user:", error);
+        });
+    }
 };
 
 // 📌 Tampilkan user login di home.html
