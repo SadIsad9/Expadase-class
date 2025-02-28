@@ -1,9 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } 
-from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
 
-// 🔥 Konfigurasi Firebase
+// 📌 Konfigurasi Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyB4JlOVGma4Fjnn5qYx_sM2cvfcIVTkL5c",
     authDomain: "expadase.firebaseapp.com",
@@ -15,134 +13,96 @@ const firebaseConfig = {
     measurementId: "G-WTH3K9LPDS"
 };
 
-// 🔥 Inisialisasi Firebase
+// Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+console.log("firebase");
 
 // 📌 Fungsi Login
 window.loginUser = function () {
     const username = document.getElementById("username").value.trim();
-    const age = document.getElementById("age").value.trim();
-    const profilePicInput = document.getElementById("profilePic");
+    const avatar = localStorage.getItem("avatar") || "Avatar/default.jpg";
 
-    if (username === "" || age === "") {
-        alert("Nama dan umur harus diisi!");
+    if (username === "") {
+        alert("Nama tidak boleh kosong!");
         return;
     }
 
-    const storage = getStorage();
-    let profilePicURL = "default.jpg"; // Default PP
-
-    if (profilePicInput.files.length > 0) {
-        const file = profilePicInput.files[0];
-        const storagePath = `profile_pictures/${username}_${Date.now()}`;
-        const fileRef = storageRef(storage, storagePath);
-
-        // Upload file ke Firebase Storage
-        uploadBytes(fileRef, file).then(() => {
-            return getDownloadURL(fileRef);
-        }).then((downloadURL) => {
-            profilePicURL = downloadURL;
-
-            // Simpan user ke database setelah upload selesai
-            return set(ref(database, "users/" + username), {
-                name: username,
-                age: age,
-                profilePic: profilePicURL
-            });
-        }).then(() => {
-            localStorage.setItem("username", username);
-            localStorage.setItem("profilePic", profilePicURL);
-            window.location.href = "home.html"; // Redirect ke home
-        }).catch((error) => {
-            console.error("Gagal menyimpan user:", error);
-        });
-    } else {
-        // Jika tidak upload foto, langsung simpan data tanpa gambar
-        set(ref(database, "users/" + username), {
-            name: username,
-            age: age,
-            profilePic: profilePicURL
-        }).then(() => {
-            localStorage.setItem("username", username);
-            localStorage.setItem("profilePic", profilePicURL);
-            window.location.href = "home.html";
-        }).catch((error) => {
-            console.error("Gagal menyimpan user:", error);
-        });
-    }
+    set(ref(database, "users/" + username), {
+        name: username,
+        profilePic: avatar
+    }).then(() => {
+        localStorage.setItem("username", username);
+        localStorage.setItem("profilePic", avatar);
+        window.location.href = "home.html";
+    }).catch((error) => {
+        console.error("Gagal menyimpan user:", error);
+    });
 };
 
-// 📌 Tampilkan user login di home.html
+// 📌 Tampilkan user di home.html
 document.addEventListener("DOMContentLoaded", () => {
     const username = localStorage.getItem("username") || "Pengguna";
-    const profilePic = localStorage.getItem("profilePic") || "default.jpg";
+    const profilePic = localStorage.getItem("profilePic") || "Avatar/default.jpg";
 
     if (document.getElementById("displayName")) {
         document.getElementById("displayName").textContent = username;
         document.getElementById("profilePicture").src = profilePic;
     }
 
-    // 🔥 Tambahkan event listener submit komentar setelah halaman siap
-    const submitButton = document.getElementById("submit-btn");
-    if (submitButton) {
-        submitButton.addEventListener("click", submitComment);
+    // Pasang event listener ke tombol kirim komentar
+    const submitBtn = document.getElementById("submit-btn");
+    if (submitBtn) {
+        submitBtn.addEventListener("click", submitComment);
     }
-
-    // 🔥 Load komentar setelah halaman siap
-    displayComments();
 });
 
 // 📌 Fungsi Logout
 window.logout = function () {
     localStorage.removeItem("username");
     localStorage.removeItem("profilePic");
-    window.location.href = "index.html";
+    localStorage.removeItem("avatar");
+    window.location.href = "login.html";
 };
 
 // 📌 Fungsi Kirim Komentar
 window.submitComment = function () {
     const message = document.getElementById("message").value.trim();
     const username = localStorage.getItem("username") || "Anonim";
-    const profilePic = localStorage.getItem("profilePic") || "default.jpg";
+    const profilePic = localStorage.getItem("profilePic") || "Avatar/default.jpg";
 
     if (message === "") {
         alert("Komentar tidak boleh kosong!");
         return;
     }
 
-    // Simpan ke Firebase
     push(ref(database, "comments"), {
         name: username,
         profilePic: profilePic,
         message: message,
         timestamp: Date.now()
     }).then(() => {
-        document.getElementById("message").value = "";
+        document.getElementById("message").value = ""; // Bersihkan input setelah komentar terkirim
     }).catch((error) => {
         console.error("Gagal mengirim komentar:", error);
     });
 };
 
 // 📌 Load Komentar
-function displayComments() {
-    onValue(ref(database, "comments"), (snapshot) => {
-        const commentList = document.getElementById("comment-list");
-        if (commentList) {
-            commentList.innerHTML = "";
+onValue(ref(database, "comments"), (snapshot) => {
+    const commentList = document.getElementById("comment-list");
+    if (commentList) {
+        commentList.innerHTML = "";
 
-            snapshot.forEach((childSnapshot) => {
-                const data = childSnapshot.val();
-                const commentElement = document.createElement("div");
-                commentElement.classList.add("border", "p-2", "mb-2", "bg-white", "text-dark");
-                commentElement.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <img src="${data.profilePic}" alt="PP" width="40" class="rounded-circle me-2">
-                        <strong>${data.name}:</strong> ${data.message}
-                    </div>
-                `;
-                commentList.prepend(commentElement);
-            });
-        }
-    });
-}
+        snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            const commentElement = document.createElement("div");
+            commentElement.classList.add("border", "p-2", "mb-2", "bg-white", "text-dark");
+            commentElement.innerHTML = `
+                <img src="${data.profilePic}" width="40" class="rounded-circle">
+                <strong>${data.name}:</strong> ${data.message}
+            `;
+            commentList.prepend(commentElement);
+        });
+    }
+});
